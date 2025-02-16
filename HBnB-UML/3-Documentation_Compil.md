@@ -122,6 +122,7 @@ sequenceDiagram
 
 2. Place Creation
 ```mermaid
+sequenceDiagram
     participant User
     participant APIGateway
     participant PlaceService
@@ -137,6 +138,7 @@ sequenceDiagram
 
 3. Review Submission
 ```mermaid
+sequenceDiagram
     participant User
     participant APIGateway
     participant ReviewService
@@ -152,6 +154,7 @@ sequenceDiagram
 
 4. Fetching a List of Places
 ```mermaid
+sequenceDiagram
     participant User
     participant APIGateway
     participant PlaceService
