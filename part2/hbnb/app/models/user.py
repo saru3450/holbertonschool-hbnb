@@ -2,7 +2,7 @@
 """This module for the Class User"""
 
 
-from .base import BaseModel
+from app.models.base_model import BaseModel
 import re
 
 
