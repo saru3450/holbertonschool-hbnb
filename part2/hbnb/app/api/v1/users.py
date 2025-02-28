@@ -26,9 +26,15 @@ class UserList(Resource):
             return {'error': 'Email already registered'}, 400
 
         new_user = facade.create_user(user_data)
-        return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
+        return {
+            'id': new_user.id,
+            'first_name': new_user.first_name,
+            'last_name': new_user.last_name,
+            'email': new_user.email
+        }, 201
 
-    @api.route('/<user_id>')
+
+@api.route('/<user_id>')
 class UserResource(Resource):
     @api.response(200, 'User details retrieved successfully')
     @api.response(404, 'User not found')
@@ -37,7 +43,12 @@ class UserResource(Resource):
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
-        return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email}, 200
+        return {
+            'id': user.id,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email
+        }, 200
 
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully updated')
@@ -45,19 +56,19 @@ class UserResource(Resource):
     @api.response(400, 'Email already registered')
     @api.response(400, 'Invalid input data')
     def put(self, user_id):
-    """Update a user"""
-    user_data = api.payload
+        """Update a user"""
+        user_data = api.payload
 
-    # Vérifier si l'utilisateur exist
-    user = facade.get_user(user_id)
-    if not user:
-        return {'error': 'User not found'}, 404
+        # Vérifier si l'utilisateur existe
+        user = facade.get_user(user_id)
+        if not user:
+            return {'error': 'User not found'}, 404
 
-    # Check if the email is already used by another user
-    existing_user = facade.get_user_by_email(user_data['email'])
-    if existing_user and existing_user['id'] != user_id:
-        return {'error': 'Email already registered'}, 400
+        # Check if the email is already used by another user
+        existing_user = facade.get_user_by_email(user_data['email'])
+        if existing_user and existing_user.id != user_id:
+            return {'error': 'Email already registered'}, 400
 
-    # Update user
-    updated_user = facade.update_user(user_id, user_data)
-    return updated_user, 201
+        # Update user
+        updated_user = facade.update_user(user_id, user_data)
+        return updated_user, 201
