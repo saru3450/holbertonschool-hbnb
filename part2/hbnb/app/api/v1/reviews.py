@@ -12,6 +12,7 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID du lieu')
 })
 
+
 @api.route('/')
 class ReviewList(Resource):
     @api.expect(review_model)
@@ -27,6 +28,7 @@ class ReviewList(Resource):
         """ Récupérer tous les avis """
         reviews = facade.get_all_reviews()
         return [vars(r) for r in reviews], 200
+
 
 @api.route('/<review_id>')
 class ReviewResource(Resource):
@@ -56,6 +58,7 @@ class ReviewResource(Resource):
             return {'message': 'Avis non trouvé'}, 404
         return {'message': 'Avis supprimé'}, 200
 
+
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):
     @api.response(200, 'Liste des avis pour un lieu')
@@ -63,4 +66,3 @@ class PlaceReviewList(Resource):
         """ Récupérer tous les avis d'un lieu """
         reviews = facade.get_reviews_by_place(place_id)
         return [vars(r) for r in reviews], 200
-
