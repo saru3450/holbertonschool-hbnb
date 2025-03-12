@@ -1,16 +1,15 @@
 #!/usr/bin/python3
-"""This module defines the User model"""
-
-import re
 from flask_bcrypt import Bcrypt
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import relationship
-from app.models.base_model import BaseModel, Base
+from flask import Blueprint, jsonify, request
+from app.routes.base_model import BaseModel, Base
+from app.routes.user import User
+import re
 
 bcrypt = Bcrypt()
 
 class User(BaseModel, Base):
-    """User model for database storage and authentication"""
     __tablename__ = 'users'
 
     first_name = Column(String(50), nullable=False)
@@ -19,12 +18,10 @@ class User(BaseModel, Base):
     password_hash = Column(String(255), nullable=False)
     is_admin = Column(Boolean, default=False)
 
-    # Relations avec d'autres modèles
     places = relationship('Place', back_populates='owner', cascade="all, delete-orphan")
     reviews = relationship('Review', back_populates='user', cascade="all, delete-orphan")
 
     def __init__(self, first_name, last_name, email, password, is_admin=False):
-        """Initialize a User instance"""
         super().__init__()
         self.first_name = first_name
         self.last_name = last_name
@@ -33,15 +30,12 @@ class User(BaseModel, Base):
         self.is_admin = is_admin
 
     def set_password(self, password):
-        """Hash the password before storing it"""
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
-        """Check if the provided password matches the hashed password"""
         return bcrypt.check_password_hash(self.password_hash, password)
 
     def update(self, data):
-        """Update user attributes dynamically"""
         if "first_name" in data:
             self.first_name = data["first_name"]
         if "last_name" in data:
@@ -52,7 +46,6 @@ class User(BaseModel, Base):
             self.email = data["email"]
 
     def to_dict(self):
-        """Convert the User instance into a dictionary"""
         return {
             "id": self.id,
             "first_name": self.first_name,
@@ -60,3 +53,16 @@ class User(BaseModel, Base):
             "email": self.email,
             "is_admin": self.is_admin
         }
+
+user_bp = Blueprint('user', __name__)
+
+@user_bp.route('/', methods=['GET'])
+def get_users():
+    users = []  
+    return jsonify(users)
+
+@user_bp.route('/', methods=['POST'])
+def create_user():
+    data = request.get_json()
+    user = User(first_name=data["first_name"], last_name=data["last_name"], email=data["email"])
+    return jsonify({"message": "User created", "user": user.to_dict()}), 201
