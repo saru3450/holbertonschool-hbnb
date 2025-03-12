@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request, jsonify
-from app.models.place import Place
+from app.routes.place import Place
 from app.storage import storage
 from app.routes.auth import login_required
 from app.services import facade
@@ -72,7 +72,7 @@ class PlaceResource(Resource):
     @api.response(200, 'Place deleted successfully')
     @api.response(403, 'Forbidden: You are not the owner')
     @api.response(404, 'Place not found')
-    @login_required  # 🔒 Protège la suppression d’un lieu
+    @login_required  # Protège la suppression d’un lieu
     def delete(self, user_id, place_id):
         """Supprimer un lieu (seulement par le propriétaire)"""
         place = facade.get_place(place_id)

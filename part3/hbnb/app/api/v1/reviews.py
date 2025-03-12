@@ -1,8 +1,8 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request, jsonify
 from app.services.facade import HBnBFacade
-from app.models.review import Review
-from app.models.place import Place
+from app.routes.review import Review
+from app.routes.place import Place
 from app.routes.auth import login_required
 from app.storage import storage
 

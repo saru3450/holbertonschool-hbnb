@@ -3,7 +3,7 @@ from flask import request, jsonify
 from app.services import facade
 from app.routes.auth import login_required
 from app.storage import storage
-from app.models.user import User
+from app.routes.user import User
 
 api = Namespace('users', description='User operations')
 

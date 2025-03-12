@@ -3,7 +3,7 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from app.models.base_model import Base
+from app.routes.base_model import Base
 
 class Storage:
     """Storage class to handle database operations"""

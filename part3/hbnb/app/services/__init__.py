@@ -1,3 +1,3 @@
-# app/services/__init__.py
+from app.services.facade import HBnBFacade
 
-from .facade import HBnBFacade
+facade = HBnBFacade()
