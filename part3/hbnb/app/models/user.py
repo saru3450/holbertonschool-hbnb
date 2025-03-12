@@ -1,109 +1,62 @@
 #!/usr/bin/python3
-"""This module for the Class User"""
+"""This module defines the User model"""
 
-
-from app.models.base_model import BaseModel
 import re
 from flask_bcrypt import Bcrypt
+from sqlalchemy import Column, String, Boolean
+from sqlalchemy.orm import relationship
+from app.models.base_model import BaseModel, Base
 
+bcrypt = Bcrypt()
 
-class User(BaseModel):
-    """To create attibutes for the Class"""
-    def __init__(self, first_name, last_name, email, is_admin=False):
+class User(BaseModel, Base):
+    """User model for database storage and authentication"""
+    __tablename__ = 'users'
+
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    password_hash = Column(String(255), nullable=False)
+    is_admin = Column(Boolean, default=False)
+
+    # Relations avec d'autres modèles
+    places = relationship('Place', back_populates='owner', cascade="all, delete-orphan")
+    reviews = relationship('Review', back_populates='user', cascade="all, delete-orphan")
+
+    def __init__(self, first_name, last_name, email, password, is_admin=False):
+        """Initialize a User instance"""
         super().__init__()
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
+        self.set_password(password)
         self.is_admin = is_admin
-        self.places = []
 
-    def add_place(self, place):
-        """This function to add places"""
-        self.places.append(place)
+    def set_password(self, password):
+        """Hash the password before storing it"""
+        self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    def verify_password(self, password):
+        """Check if the provided password matches the hashed password"""
+        return bcrypt.check_password_hash(self.password_hash, password)
 
     def update(self, data):
+        """Update user attributes dynamically"""
         if "first_name" in data:
             self.first_name = data["first_name"]
         if "last_name" in data:
             self.last_name = data["last_name"]
         if "email" in data:
+            if not re.match(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", data["email"]):
+                raise ValueError("Invalid email format")
             self.email = data["email"]
 
-    @property
-    def first_name(self):
-        return self._first_name
-
-    @first_name.setter
-    def first_name(self, value):
-        if not isinstance(value, str):
-            raise TypeError("First name must be a string")
-        if not value:
-            raise TypeError("First name is required")
-        if len(value) > 50:
-            raise ValueError("First name is too long")
-        self._first_name = value
-
-    @property
-    def last_name(self):
-        return self._last_name
-
-    @last_name.setter
-    def last_name(self, value):
-        if not isinstance(value, str):
-            raise TypeError("Last Name must be a string")
-        if not value:
-            raise TypeError("Last name is required")
-        if len(value) > 50:
-            raise ValueError("Last name is too long")
-        self._last_name = value
-
-    @property
-    def email(self):
-        return self._email
-
-    @email.setter
-    def email(self, value):
-        if not isinstance(value, str):
-            raise TypeError("Email must be a string")
-        if not value:
-            raise TypeError("Email is required")
-        if not re.match(
-            r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$", value
-        ):
-            raise ValueError("Email is not valid")
-        self._email = value
-
-    @property
-    def is_admin(self):
-        return self._is_admin
-
-    @is_admin.setter
-    def is_admin(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("Admin must be True or False")
-        self._is_admin = value
-
     def to_dict(self):
+        """Convert the User instance into a dictionary"""
         return {
             "id": self.id,
             "first_name": self.first_name,
             "last_name": self.last_name,
             "email": self.email,
+            "is_admin": self.is_admin
         }
-
-
-class User(BaseModel):
-    def __init__(self, first_name, last_name, email, is_admin=False):
-        super().__init__()
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.is_admin = is_admin
-
-    def hash_password(self, password):
-        """Hashes the password before storing it."""
-        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
-
-    def verify_password(self, password):
-        """Verifies if the provided password matches the hashed password."""
-        return bcrypt.check_password_hash(self.password, password)
