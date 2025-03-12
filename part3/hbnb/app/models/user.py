@@ -26,7 +26,7 @@ class User(BaseModel, Base):
 
     def hash_password(self, password):
         """Hash the password before storing it."""
-        self.password = bcrypt.generate_password_hash(password).decode('utf-8'
+        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def __init__(self, first_name, last_name, email, password, is_admin=False):
         super().__init__()
@@ -40,7 +40,8 @@ class User(BaseModel, Base):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
-        return bcrypt.check_password_hash(self.password_hash, password)
+        """Verify the hashed password."""
+        return bcrypt.check_password_hash(self.password, password)
 
     def update(self, data):
         if "first_name" in data:
