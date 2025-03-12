@@ -1,31 +1,42 @@
-from flask_restx import Namespace, Resource, fields
-from flask_jwt_extended import create_access_token
-from app.services import facade
+# app/models/auth.py
+import jwt
+import datetime
+from functools import wraps
+from flask import request, jsonify
+from app.models.user import User
 
-api = Namespace('auth', description='Authentication operations')
+SECRET_KEY = "your_secret_key"
 
-# Model for input validation
-login_model = api.model('Login', {
-    'email': fields.String(required=True, description='User email'),
-    'password': fields.String(required=True, description='User password')
-})
+def generate_token(user_id):
+    """Génère un token JWT valide pendant 2 heures"""
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+    }
+    return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
-@api.route('/login')
-class Login(Resource):
-    @api.expect(login_model)
-    def post(self):
-        """Authenticate user and return a JWT token"""
-        credentials = api.payload  # Get the email and password from the request payload
-        
-        # Step 1: Retrieve the user based on the provided email
-        user = facade.get_user_by_email(credentials['email'])
-        
-        # Step 2: Check if the user exists and the password is correct
-        if not user or not user.verify_password(credentials['password']):
-            return {'error': 'Invalid credentials'}, 401
+def verify_token(token):
+    """Vérifie et décode un token JWT"""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload["user_id"]
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
 
-        # Step 3: Create a JWT token with the user's id and is_admin flag
-        access_token = create_access_token(identity={'id': str(user.id), 'is_admin': user.is_admin})
-        
-        # Step 4: Return the JWT token to the client
-        return {'access_token': access_token}, 200
+def login_required(f):
+    """Vérifie que l'utilisateur est connecté via un token JWT"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"error": "Missing token"}), 401
+
+        user_id = verify_token(token)
+        if not user_id:
+            return jsonify({"error": "Invalid or expired token"}), 401
+
+        return f(user_id, *args, **kwargs)
+    
+    return decorated_function
