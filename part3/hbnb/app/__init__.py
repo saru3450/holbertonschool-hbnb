@@ -1,35 +1,33 @@
+from flask import Flask, Blueprint, redirect
 from flask import Flask
 from flask_restx import Api
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager
-from config import DevelopmentConfig  # Vérifie que le fichier config.py existe et contient DevelopmentConfig
-
-# Initialiser les extensions
-bcrypt = Bcrypt()
-jwt = JWTManager()
-
-# Importation des namespaces
+from flask_sqlalchemy import SQLAlchemy
 from app.api.v1.users import api as users_ns
-from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.places import api as places_ns
+from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.reviews import api as reviews_ns
 
-def create_app(config_class=DevelopmentConfig):
-    """Initialise et configure l'application Flask"""
+db = SQLAlchemy()
+
+def create_app(config_class=config.DevelopmentConfig):
     app = Flask(__name__)
-    app.config.from_object(config_class)
+    db.init_app(app)
 
-    # Initialisation des extensions
-    bcrypt.init_app(app)
-    jwt.init_app(app)
+    @app.route('/')
+    def root():
+        return redirect("/api/v1/")
+        
+    #initialize Blueprint with a root API path
+    api_blueprint = Blueprint('api', __name__, url_prefix='/api/v1')
+    api = Api(api_blueprint, title='HBnb API', version='1.0', description='HBnB Application API', doc='/')
 
-    # Création de l'API
-    api = Api(app, version='1.0', title='HBnB API', description='API')
-
-    # Enregistrement des namespaces
-    api.add_namespace(users_ns, path='/api/v1/users')
-    api.add_namespace(amenities_ns, path='/api/v1/amenities')
-    api.add_namespace(places_ns, path='/api/v1/places')
-    api.add_namespace(reviews_ns, path='/api/v1/reviews')
+    # Register namespaces with the API
+    api.add_namespace(users_ns, path='/users')
+    api.add_namespace(places_ns, path='/places')
+    api.add_namespace(amenities_ns, path='/amenities')
+    api.add_namespace(reviews_ns, path='/reviews')
+    
+    #reigister the blueprint with the app
+    app.register_blueprint(api_blueprint)
 
     return app
