@@ -34,7 +34,6 @@ class HBnBFacade:
     def update_user(self, user_id, user_data):
         if "email" in user_data or "password" in user_data:
             raise ValueError("You cannot modify email or password.")
-        self.user_repository.update(user_id, user_data)
         self.user_repo.update(user_id, user_data)
         return self.user_repo.get(user_id)
 
@@ -80,12 +79,22 @@ class HBnBFacade:
         if not place:
             raise ValueError("Place not found")
         if user_id and place.owner_id != user_id and not self.is_admin(user_id):
-            raise ValueError("Unauthorized action"
+            raise ValueError("Unauthorized action")
         self.place_repo.update(place_id, place_data)
         return self.place_repo.get(place_id)
 
     # review
     def create_review(self, review_data):
+        place_id = review_data['place_id']
+        place = self.get_place(place_id)
+        if not place:
+            raise ValueError("Place not found")
+        if user_id and place.owner_id == user_id:
+            raise ValueError("You cannot review your own place.")
+        existing_review = self.review_repository.get_by_attribute('user_id', user_id)
+        if existing_review and existing_review.place_id == place_id:
+            raise ValueError("You have already reviewed this place.")
+        review_data['user_id'] = user_id
         review = Review(**review_data)
         self.review_repo.add(review)
         return review
@@ -100,17 +109,19 @@ class HBnBFacade:
         return self.review_repo.get_by_attribute('place_id', place_id)
 
     def update_review(self, review_id, review_data):
-        self.place_repo.update(review_id, review_data)
         review = self.get_review(review_id)
         if not review:
             raise ValueError("Review not found")
         if user_id and review.user_id != user_id and not self.is_admin(user_id):
             raise ValueError("Unauthorized action")
-        self.review_repo.update(review_id, review_data)
+        self.place_repo.update(review_id, review_data)
         return self.place_repo.get(review_id)
 
     def delete_review(self, review_id):
+        review = self.get_review(review_id)
+        if not review:
+            raise ValueError("Review not found")
+        if user_id and review.user_id != user_id and not self.is_admin(user_id):
+            raise ValueError("Unauthorized action")
         self.review_repo.delete(review_id)
-        pass
-
 
