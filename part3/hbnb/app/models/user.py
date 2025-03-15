@@ -3,30 +3,24 @@ from flask_bcrypt import Bcrypt
 from sqlalchemy import Column, String, Boolean
 from sqlalchemy.orm import relationship
 from flask import Blueprint, jsonify, request
-from app.routes.base_model import BaseModel, Base
-from app.routes.user import User
+from app.models.base_model import BaseModel, Base
+from app.models.user import User
+from app import bcrypt, db
 import re
-from app import db, bcrypt
-import uuid
-from .base_model import BaseModel  # Import BaseModel from its module
 
 bcrypt = Bcrypt()
 
 class User(BaseModel, Base):
     __tablename__ = 'users'
 
-    first_name = Column(String(50), nullable=False)
-    last_name = Column(String(50), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    password_hash = Column(String(255), nullable=False)
-    is_admin = Column(Boolean, default=False)
+    first_name = db.Column(String(50), nullable=False)
+    last_name = db.Column(String(50), nullable=False)
+    email = db.Column(String(100), unique=True, nullable=False)
+    password_hash = db.Column(String(255), nullable=False)
+    is_admin = db.Column(Boolean, default=False)
 
-    places = relationship('Place', back_populates='owner', cascade="all, delete-orphan")
-    reviews = relationship('Review', back_populates='user', cascade="all, delete-orphan")
-
-    def hash_password(self, password):
-        """Hash the password before storing it."""
-        self.password = bcrypt.generate_password_hash(password).decode('utf-8')
+    places = db.relationship('Place', back_populates='owner', cascade="all, delete-orphan")
+    reviews = db.relationship('Review', back_populates='user', cascade="all, delete-orphan")
 
     def __init__(self, first_name, last_name, email, password, is_admin=False):
         super().__init__()
@@ -40,8 +34,7 @@ class User(BaseModel, Base):
         self.password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
     def verify_password(self, password):
-        """Verify the hashed password."""
-        return bcrypt.check_password_hash(self.password, password)
+        return bcrypt.check_password_hash(self.password_hash, password)
 
     def update(self, data):
         if "first_name" in data:
