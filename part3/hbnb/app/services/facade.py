@@ -58,7 +58,7 @@ class HBnBFacade:
         return self.amenity_repository.get(amenity_id)
 
     # Place method
-    def create_place(self, place_data):
+    def create_place(self, place_data, owner_id=None):
         if owner_id:
             place_data['owner_id'] = owner_id
         place = Place(**place_data)
