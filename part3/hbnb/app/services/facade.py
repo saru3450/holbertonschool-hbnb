@@ -37,9 +37,9 @@ class HBnBFacade:
         self.user_repo.update(user_id, user_data)
         return self.user_repo.get(user_id)
 
-     def is_admin(self, user_id):
-         user = self.get_user_by_id(user_id)
-         return user.is_admin if user else False
+    def is_admin(self, user_id):
+        user = self.get_user_by_id(user_id)
+        return user.is_admin if user else False
 
     # Amenity method
     def create_amenity(self, amenity_data):
