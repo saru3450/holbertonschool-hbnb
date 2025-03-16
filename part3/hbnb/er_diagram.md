@@ -13,7 +13,7 @@ erDiagram
         CHAR(36) id PK
         VARCHAR(255) title
         TEXT description
-        DECIMAL(10,2) price
+        DECIMAL(10) price
         FLOAT latitude
         FLOAT longitude
         CHAR(36) owner_id FK
