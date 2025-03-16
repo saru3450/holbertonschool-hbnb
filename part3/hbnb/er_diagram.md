@@ -1,40 +1,40 @@
 ```mermaid
 erDiagram
     users {
-        CHAR(36) id PK "Primary Key (UUID)"
+        CHAR(36) id PK
         VARCHAR(255) first_name
         VARCHAR(255) last_name
-        VARCHAR(255) email "Unique"
-        VARCHAR(255) password "Hashed password"
-        BOOLEAN is_admin "Default: FALSE"
+        VARCHAR(255) email
+        VARCHAR(255) password
+        BOOLEAN is_admin
     }
 
     places {
-        CHAR(36) id PK "Primary Key (UUID)"
+        CHAR(36) id PK
         VARCHAR(255) title
         TEXT description
         DECIMAL(10,2) price
         FLOAT latitude
         FLOAT longitude
-        CHAR(36) owner_id FK "Foreign Key to users(id)"
+        CHAR(36) owner_id FK
     }
 
     reviews {
-        CHAR(36) id PK "Primary Key (UUID)"
+        CHAR(36) id PK
         TEXT text
-        INT rating "Between 1 and 5"
-        CHAR(36) user_id FK "Foreign Key to users(id)"
-        CHAR(36) place_id FK "Foreign Key to places(id)"
+        INT rating
+        CHAR(36) user_id FK
+        CHAR(36) place_id FK
     }
 
     amenities {
-        CHAR(36) id PK "Primary Key (UUID)"
-        VARCHAR(255) name "Unique"
+        CHAR(36) id PK
+        VARCHAR(255) name
     }
 
     place_amenities {
-        CHAR(36) place_id FK "Foreign Key to places(id)"
-        CHAR(36) amenity_id FK "Foreign Key to amenities(id)"
+        CHAR(36) place_id FK
+        CHAR(36) amenity_id FK
     }
 
     %% Relationships
