@@ -1,6 +1,6 @@
 ```mermaid
 erDiagram
-    users {
+    user {
         CHAR(36) id PK
         VARCHAR(255) first_name
         VARCHAR(255) last_name
@@ -9,7 +9,7 @@ erDiagram
         BOOLEAN is_admin
     }
 
-    places {
+    place {
         CHAR(36) id PK
         VARCHAR(255) title
         TEXT description
@@ -19,7 +19,7 @@ erDiagram
         CHAR(36) owner_id FK
     }
 
-    reviews {
+    review {
         CHAR(36) id PK
         TEXT text
         INT rating
@@ -27,18 +27,20 @@ erDiagram
         CHAR(36) place_id FK
     }
 
-    amenities {
+    amenity {
         CHAR(36) id PK
         VARCHAR(255) name
     }
 
-    place_amenities {
+    place_amenity {
         CHAR(36) place_id FK
         CHAR(36) amenity_id FK
     }
 
     %% Relationships
-    users ||--o{ places : "owns"
-    places ||--o{ reviews : "has"
-    places }o--o{ amenities : "includes"
+    user ||--o{ place : "owns"
+    user ||--o{ review : "writes"
+    place ||--o{ review : "has"
+    place ||--o{ place_amenity : "has"
+    amenity ||--o{ place_amenity : "associated with"
 ```
