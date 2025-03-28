@@ -30,3 +30,12 @@ class Amenity(BaseModel):
             "id": self.id,
             "name": self.name
         }
+
+    def update_name(self, new_name=None):
+        # Met à jour le nom avec validation et ajuste la date de modification
+        try:
+            if new_name:
+                self.name = self.valide_name(new_name)  # Valide et met à jour le nom
+            self.updated_at = datetime.datetime.now()  # Met à jour la date de modification
+        except ValueError as e:
+            print(f"Erreur lors de la mise à jour du nom : {e}")  # Gère les erreurs de validation
