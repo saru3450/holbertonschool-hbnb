@@ -24,9 +24,12 @@ class HBnBFacade:
 
     def get_user(self, user_id):
         return self.user_repository.get(user_id)
+    
+    def get_all_users(self):
+        return self.user_repository.get_all()
 
     def get_user_by_email(self, email):
-        return self.user_repository.get_by_attribute(email)
+        return self.user_repository.get_by_attribute("email", email)
 
     def update_user(self, user_id, user_data):
         if "email" in user_data or "password" in user_data:
