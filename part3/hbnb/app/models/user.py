@@ -22,6 +22,9 @@ class User(BaseModel):
     places = relationship('Place', backref='owner', lazy=True)
     reviews = relationship('Review', backref='author', lazy=True)
 
+    def __init__(self, **kwargs):  # ✅ Ajoute un constructeur qui accepte les kwargs
+        super().__init__(**kwargs)  # ✅ Appelle le constructeur du `BaseModel`
+
     @validates('first_name', 'last_name')
     def validate_names(self, key, value):
         """Validation for first_name and last_name"""
