@@ -55,3 +55,83 @@ async function loginUser(email, password) {
       alert('Erreur lors de la connexion. Veuillez réessayer.');
   }
 }
+
+// ✅ Fonction pour récupérer un cookie par nom
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+}
+
+// ✅ Vérifie si l'utilisateur est connecté et affiche/masque le lien login
+function checkAuthentication() {
+  const token = getCookie('token');
+  const loginLink = document.getElementById('login-link');
+
+  if (!token) {
+      loginLink.style.display = 'block'; // Affiche le lien si non connecté
+  } else {
+      loginLink.style.display = 'none';  // Cache le lien si connecté
+      fetchPlaces(token); // Charge les lieux
+  }
+}
+
+// ✅ Stock global pour les lieux (utile pour filtrer)
+let allPlaces = [];
+
+// ✅ Récupère les lieux depuis l’API
+async function fetchPlaces(token) {
+  try {
+      const response = await fetch('https://your-api-url/places', {
+          method: 'GET',
+          headers: {
+              'Authorization': `Bearer ${token}`
+          }
+      });
+
+      if (response.ok) {
+          const places = await response.json();
+          allPlaces = places;
+          displayPlaces(places);
+      } else {
+          console.error('Erreur lors de la récupération des lieux');
+      }
+  } catch (error) {
+      console.error('Erreur réseau :', error);
+  }
+}
+
+// ✅ Affiche les lieux dans #places-list
+function displayPlaces(places) {
+  const placesList = document.getElementById('places-list');
+  placesList.innerHTML = ''; // Vide avant d’afficher
+
+  places.forEach(place => {
+      const placeElement = document.createElement('div');
+      placeElement.classList.add('place');
+      placeElement.setAttribute('data-price', place.price);
+
+      placeElement.innerHTML = `
+          <h3>${place.name}</h3>
+          <p>${place.description}</p>
+          <p><strong>Lieu:</strong> ${place.location}</p>
+          <p><strong>Prix:</strong> ${place.price} €</p>
+      `;
+
+      placesList.appendChild(placeElement);
+  });
+}
+
+// ✅ Filtre les lieux en fonction du prix sélectionné
+document.getElementById('price-filter').addEventListener('change', (event) => {
+  const selectedValue = event.target.value;
+  const maxPrice = selectedValue === 'All' ? Infinity : parseFloat(selectedValue);
+
+  const filteredPlaces = allPlaces.filter(place => place.price <= maxPrice);
+  displayPlaces(filteredPlaces);
+});
+
+// ✅ Exécution au chargement de la page
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuthentication();
+});
