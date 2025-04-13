@@ -1,4 +1,4 @@
-/* 
+/*
 This is a SAMPLE FILE to get you started.
 Please, follow the project instructions to complete the tasks.
 */
@@ -68,27 +68,29 @@ function getCookie(name) {
 
 function checkAuthentication() {
   const token = getCookie('token');
-  const loginLink = document.getElementById('login-link');
+  const placeId = getPlaceIdFromURL();
+
   const addReviewSection = document.getElementById('add-review');
-
-  if (loginLink) {
-    loginLink.style.display = token ? 'none' : 'block';
-  }
-
   if (addReviewSection) {
     addReviewSection.style.display = token ? 'block' : 'none';
   }
 
-  const placeId = getPlaceIdFromURL();
+  // Si un `placeId` est présent dans l'URL, récupérer les détails, sinon afficher tous les lieux
   if (placeId) {
     fetchPlaceDetails(token, placeId);
   } else {
-    fetchPlaces(token);
+    fetchPlaces(token); // Appel de `fetchPlaces` ici
   }
 }
 
 let allPlaces = [];
-// ✅ Récupère les lieux depuis l’API
+// ✅ Récupère les place depuis l’API
+
+// ✅ Exécution après chargement du DOM
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuthentication();
+});
+
 async function fetchPlaces(token) {
   try {
     const response = await fetch('http://127.0.0.1:5000/api/v1/places/', {
@@ -98,38 +100,45 @@ async function fetchPlaces(token) {
     });
 
     if (response.ok) {
-      const places = await response.json();
-      displayPlaces(places);
-    } else {
+      allPlaces = await response.json(); // Stockage global des lieux
+      console.log('Places fetched:', allPlaces);
+      displayPlaces(allPlaces); // Affiche les lieux récupérés
+  } else {
       console.error('Erreur lors de la récupération des lieux');
-    }
-  } catch (error) {
-    console.error('Erreur réseau :', error);
   }
+} catch (error) {
+  console.error('Erreur réseau :', error);
+}
 }
 
 // ✅ Affiche les lieux dans #places-list
 function displayPlaces(places) {
   const placesList = document.getElementById('places-list');
-  placesList.innerHTML = ''; // Vide avant d’afficher
+    placesList.innerHTML = ''; // Vide le contenu existant
 
-  places.forEach(place => {
-    const placeElement = document.createElement('div');
-    placeElement.classList.add('place-card');
+    if (!places || places.length === 0) {
+      console.log("No places to display.");
+      placesList.innerHTML = '<p>Aucun lieu disponible pour le moment.</p>';
+      return;
+    }
 
-    placeElement.innerHTML = `
-      <h3>${place.name}</h3>
-      <p>${place.description}</p>
-      <p><strong>Lieu:</strong> ${place.location}</p>
-      <p><strong>Prix:</strong> ${place.price} €</p>
-      `;
+    places.forEach(place => {
+        console.log("Displaying place:", place);
+        const placeCard = document.createElement('div');
+        placeCard.classList.add('place-card');
 
-    placesList.appendChild(placeElement);
-  });
+        placeCard.innerHTML = `
+            <h3 class="place-name">${place.title}</h3>
+            <p class="place-price">${place.price} € par nuit</p>
+            <a href="place.html?id=${place.id}" class="details-button">Voir les détails</a>
+        `;
+
+        placesList.appendChild(placeCard);
+    });
 }
 
 // ✅ Filtre les lieux en fonction du prix sélectionné
-document.getElementById('price-filter').addEventListener('change', (event) => {
+document.getElementById('price-filter')?.addEventListener('change', (event) => {
   const selectedValue = event.target.value;
   const maxPrice = selectedValue === 'All' ? Infinity : parseFloat(selectedValue);
 
@@ -138,7 +147,6 @@ document.getElementById('price-filter').addEventListener('change', (event) => {
 });
 
 // ✅ Exécution au chargement de la page
-
 // ✅ Récupère un cookie par nom
 function getCookie(name) {
   const cookieValue = document.cookie
@@ -151,26 +159,9 @@ function getCookie(name) {
 // ✅ Récupère l’ID du lieu à partir de l’URL (?id=123)
 function getPlaceIdFromURL() {
   const params = new URLSearchParams(window.location.search);
-  return params.get('id') || null; // retourne null si aucun id n'est trouvé
+  const placeId = params.get('id');
+  return placeId;
 }
-
-// ✅ Vérifie si l’utilisateur est connecté + lance la récupération du lieu
-function checkAuthentication() {
-  const token = getCookie('token');
-  const placeId = getPlaceIdFromURL();
-
-  const addReviewSection = document.getElementById('add-review');
-  if (addReviewSection) {
-    addReviewSection.style.display = token ? 'block' : 'none';
-  } 
-
-  }
-
-  if (placeId) {
-    fetchPlaceDetails(token, placeId);
-  } else {
-    fetchPlaces(token);
-  }
 
 // ✅ Récupère les détails du lieu via l’API
 async function fetchPlaceDetails(token, placeId) {
@@ -181,6 +172,7 @@ async function fetchPlaceDetails(token, placeId) {
 
     if (response.ok) {
       const place = await response.json();
+      console.log("Place details fetched successfully:", place); // Debugging
       displayPlaceDetails(place);
     } else {
       console.error('Erreur lors du chargement du lieu');
@@ -189,25 +181,13 @@ async function fetchPlaceDetails(token, placeId) {
     console.error('Erreur réseau :', error);
   }
 }
-
 // ✅ Affiche les détails du lieu
 function displayPlaceDetails(place) {
-  const detailsSection = document.getElementById('place-details');
-  const reviewsSection = document.getElementById('reviews');
-
-  detailsSection.innerHTML = `
-    <h1>${place.name}</h1>
-    <p>${place.description}</p>
-    <p><strong>Prix:</strong> ${place.price} €</p>
-    <p><strong>Localisation:</strong> ${place.location}</p>
-    <p><strong>Équipements:</strong> ${place.amenities.join(', ')}</p>
+  const placeDetails = document.getElementById('place-details');
+  placeDetails.innerHTML = `
+      <h1>${place.title}</h1>
+      <p>${place.description}</p>
+      <p>Prix : ${place.price} € par nuit</p>
+      <p>Localisation : Latitude ${place.latitude}, Longitude ${place.longitude}</p>
   `;
-
-  reviewsSection.innerHTML = '<h2>Commentaires</h2>';
-  place.reviews.forEach(review => {
-    const reviewEl = document.createElement('div');
-    reviewEl.classList.add('review');
-    reviewEl.innerHTML = `<p>${review.text}</p>`;
-    reviewsSection.appendChild(reviewEl);
-  });
 }
